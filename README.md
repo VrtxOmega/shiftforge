@@ -2,10 +2,13 @@
 
 **Smart employee shift scheduler with compatibility-aware optimization — all data stays in your browser.**
 
-[![VERITAS](https://img.shields.io/badge/VERITAS-%CE%A9-gold.svg?style=for-the-badge&colorA=000000&colorB=d4af37)](https://github.com/VrtxOmega)
-[![Status](https://img.shields.io/badge/Status-ACTIVE-success?style=for-the-badge&labelColor=000000&color=d4af37)](https://vrtxomega.github.io/shiftforge/)
-[![Stack](https://img.shields.io/badge/Stack-Vanilla%20JS%20%2B%20GitHub%20Pages-informational?style=for-the-badge&labelColor=000000)](https://github.com/VrtxOmega/shiftforge)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge&labelColor=000000)](LICENSE)
+<img width="2531" height="1438" alt="Screenshot 2026-04-18 020745" src="https://github.com/user-attachments/assets/3641f1d2-80ac-458d-a1cc-c6560964a5eb" />
+<img width="2548" height="1439" alt="Screenshot 2026-04-18 020818" src="https://github.com/user-attachments/assets/28583664-4561-4352-a8a5-15f6cf7a01f8" />
+<img width="2554" height="1433" alt="Screenshot 2026-04-18 020807" src="https://github.com/user-attachments/assets/f999f633-5273-403a-9097-dc2cb2d08ece" />
+<img width="2554" height="1439" alt="Screenshot 2026-04-18 020825" src="https://github.com/user-attachments/assets/f8c067da-889f-4e03-8255-bcaac37e1299" />
+
+
+
 
 **Live Site:** https://vrtxomega.github.io/shiftforge/
 
