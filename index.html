@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ShiftForge by Veritas — Smart Restaurant Scheduling</title>
 <meta name="description" content="AI-powered employee scheduling with compatibility optimization. Built by Veritas Lab.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><text x='16' y='23' text-anchor='middle' font-size='20' font-family='serif' font-weight='bold' fill='%23d4a843'>Ω</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap');
 
@@ -654,9 +655,90 @@
     .modal { padding: 20px; width: 96%; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* === PHASE 1: Toast Notifications === */
+  .toast-container { position:fixed; top:20px; right:20px; z-index:10000; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+  .toast { pointer-events:auto; padding:14px 20px; border-radius:var(--radius-sm); font-size:0.88rem; font-weight:500; color:var(--text-bright); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); box-shadow:var(--shadow); animation:toastIn 0.35s ease, toastOut 0.35s ease 2.8s forwards; display:flex; align-items:center; gap:10px; max-width:380px; }
+  .toast-success { background:rgba(76,175,80,0.92); border-color:rgba(76,175,80,0.4); }
+  .toast-error { background:rgba(239,83,80,0.92); border-color:rgba(239,83,80,0.4); }
+  .toast-warning { background:rgba(255,167,38,0.92); border-color:rgba(255,167,38,0.4); color:#1a1a25; }
+  .toast-info { background:rgba(66,165,245,0.92); border-color:rgba(66,165,245,0.4); }
+  @keyframes toastIn { from { transform:translateX(120%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+  @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(120%); } }
+
+  /* === PHASE 1: Last-saved indicator === */
+  .last-saved { font-size:0.72rem; color:var(--text-dim); opacity:0.7; transition:opacity 0.3s; }
+  .last-saved.just-saved { opacity:1; color:var(--green); }
+
+  /* === PHASE 1: Inline confirm === */
+  .inline-confirm { display:inline-flex; gap:6px; align-items:center; animation:fadeIn 0.2s ease; }
+  .inline-confirm .confirm-msg { font-size:0.78rem; color:var(--red); font-weight:600; }
+  .inline-confirm button { font-size:0.72rem; padding:3px 10px; border-radius:4px; border:1px solid; cursor:pointer; font-weight:600; font-family:inherit; }
+  .inline-confirm .confirm-yes { background:var(--red); color:white; border-color:var(--red); }
+  .inline-confirm .confirm-no { background:transparent; color:var(--text-dim); border-color:var(--border); }
+
+  /* === PHASE 3: Micro-animations === */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes countUp { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+  .stat-card { animation:fadeInUp 0.4s ease backwards; }
+  .stat-card:nth-child(1) { animation-delay:0.05s; } .stat-card:nth-child(2) { animation-delay:0.1s; }
+  .stat-card:nth-child(3) { animation-delay:0.15s; } .stat-card:nth-child(4) { animation-delay:0.2s; }
+  .stat-card:nth-child(5) { animation-delay:0.25s; } .stat-card:nth-child(6) { animation-delay:0.3s; }
+  .employee-card { animation:fadeIn 0.3s ease backwards; }
+
+  /* === PHASE 2: Schedule History === */
+  .history-item { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:8px; transition:border-color var(--transition); cursor:pointer; }
+  .history-item:hover { border-color:var(--gold-dim); }
+  .history-item .hi-date { font-weight:600; color:var(--text); font-size:0.9rem; }
+  .history-item .hi-quality { font-size:0.82rem; font-weight:700; }
+  .history-item .hi-actions { display:flex; gap:6px; }
+
+  /* === PHASE 2: Labor Cost === */
+  .cost-summary { background:linear-gradient(135deg, rgba(212,168,67,0.08), rgba(212,168,67,0.02)); border:1px solid var(--border-gold); border-radius:var(--radius-sm); padding:16px; margin-top:16px; }
+  .cost-total { font-size:1.4rem; font-weight:800; color:var(--gold); font-family:'Orbitron',monospace; }
+
+  /* === PHASE 2: Manual Override === */
+  .schedule-emp.removable { cursor:pointer; position:relative; }
+  .schedule-emp.removable:hover { opacity:0.7; text-decoration:line-through; }
+  .add-emp-btn { display:inline-block; padding:2px 8px; margin:2px; border-radius:4px; font-size:0.72rem; font-weight:700; background:transparent; border:1px dashed var(--border); color:var(--text-dim); cursor:pointer; transition:all var(--transition); }
+  .add-emp-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  /* === PHASE 2: Employee Schedule View === */
+  .emp-schedule-mini { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:8px; }
+  .emp-schedule-mini .esm-day { font-size:0.68rem; text-align:center; padding:4px 2px; background:var(--bg-input); border-radius:4px; border:1px solid var(--border); }
+  .emp-schedule-mini .esm-day.has-shift { background:var(--green-bg); border-color:rgba(76,175,80,0.3); }
+  .emp-schedule-mini .esm-day .esm-label { font-weight:700; color:var(--text-dim); margin-bottom:2px; }
+  .emp-schedule-mini .esm-day .esm-shifts { font-size:0.62rem; color:var(--green); }
+
+  /* === PHASE 3: Progress bar === */
+  .gen-progress { display:none; margin:16px 0; }
+  .gen-progress.active { display:block; }
+  .progress-bar { height:6px; background:var(--bg-input); border-radius:3px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius:3px; transition:width 0.15s ease; }
+  .progress-label { font-size:0.78rem; color:var(--text-dim); margin-top:6px; text-align:center; }
+
+  /* === PHASE 3: Keyboard shortcut hint === */
+  .kbd-hint { display:inline-block; padding:1px 5px; font-size:0.65rem; background:var(--bg-input); border:1px solid var(--border); border-radius:3px; color:var(--text-dim); font-family:monospace; margin-left:6px; vertical-align:middle; }
+
+  /* === PHASE 4: PTO === */
+  .pto-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .pto-chip { padding:4px 10px; font-size:0.78rem; background:var(--red-bg); border:1px solid rgba(239,83,80,0.25); border-radius:20px; color:var(--red); display:flex; align-items:center; gap:6px; }
+  .pto-chip button { background:none; border:none; color:var(--red); cursor:pointer; font-size:0.9rem; padding:0; line-height:1; }
+
+  /* === PHASE 4: Schedule Comparison === */
+  .diff-added { background:var(--green-bg); }
+  .diff-removed { background:var(--red-bg); }
+
+  /* === PHASE 4: Templates === */
+  .template-card { padding:12px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .template-card:hover { border-color:var(--gold-dim); }
 </style>
 </head>
 <body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
 <header>
   <div class="logo">
@@ -666,7 +748,10 @@
       <div class="subtitle">Powered by Veritas Lab</div>
     </div>
   </div>
-  <div class="header-badge">v1.0 &bull; All data stored locally</div>
+  <div style="text-align:right;">
+    <div class="header-badge">v2.0 &bull; All data stored locally</div>
+    <div class="last-saved" id="last-saved"></div>
+  </div>
 </header>
 
 <nav id="main-nav">
@@ -694,6 +779,11 @@
     <div class="card" id="recent-schedule-card" style="display:none;">
       <h2><span class="icon">&#128197;</span> Current Schedule</h2>
       <div id="dashboard-schedule"></div>
+    </div>
+    <div class="card" id="schedule-history-card" style="display:none;">
+      <h2><span class="icon">&#128218;</span> Schedule History</h2>
+      <p style="color:var(--text-dim);font-size:0.82rem;margin-bottom:12px;">Past accepted schedules (up to 12 weeks)</p>
+      <div id="schedule-history-list"></div>
     </div>
     <div class="card" id="team-overview-card" style="display:none;">
       <h2><span class="icon">&#128101;</span> Team Overview</h2>
@@ -784,7 +874,11 @@
           </select>
         </div>
       </div>
-      <button class="btn btn-gold" onclick="generateSchedule()" style="padding:12px 36px;font-size:0.95rem;">Generate Optimized Schedule</button>
+      <div class="gen-progress" id="gen-progress">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
+        <div class="progress-label" id="progress-label">Initializing...</div>
+      </div>
+      <button class="btn btn-gold" id="gen-btn" onclick="generateSchedule()" style="padding:12px 36px;font-size:0.95rem;">Generate Optimized Schedule <span class="kbd-hint">Ctrl+G</span></button>
     </div>
     <div class="card" id="schedule-output-card" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
@@ -796,6 +890,7 @@
         </div>
       </div>
       <div id="schedule-score"></div>
+      <div id="schedule-cost" class="cost-summary" style="display:none;"></div>
       <div style="margin-top:16px;">
         <div id="schedule-output"></div>
       </div>
@@ -840,8 +935,9 @@
       <p style="color:var(--text-dim);margin-bottom:16px;font-size:0.85rem;">Export to share or back up. Import to restore. All data lives in your browser.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <button class="btn btn-outline" onclick="exportData()">&#128229; Export JSON</button>
+        <button class="btn btn-outline" onclick="exportCSV()">&#128196; Export CSV</button>
         <label class="btn btn-outline" style="cursor:pointer;">&#128228; Import JSON <input type="file" accept=".json" onchange="importData(event)" style="display:none;"></label>
-        <button class="btn btn-danger" onclick="clearAllData()">&#128465; Clear All Data</button>
+        <button class="btn btn-danger" id="clear-all-btn" onclick="confirmClearAll(this)">&#128465; Clear All Data</button>
       </div>
     </div>
   </div>
@@ -860,6 +956,7 @@
 // ===================== DATA STORE =====================
 const STORE_KEY = 'shiftforge_data';
 let data = loadData();
+let _pendingSchedule = null;
 
 function defaultData() {
   return {
@@ -879,6 +976,9 @@ function defaultData() {
       weaknesses: ['Tardiness', 'Phone Usage', 'Slow Under Pressure', 'Attitude Issues', 'Call-Outs', 'Inconsistent Quality', 'Poor Time Mgmt', 'Needs Supervision', 'Conflict-Prone', 'Easily Distracted'],
     },
     currentSchedule: null,
+    scheduleHistory: [],
+    hourlyRates: {},
+    pendingSchedule: null,
     nextId: 1,
   };
 }
@@ -896,27 +996,67 @@ function loadData() {
   return defaultData();
 }
 
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  const el = document.getElementById('last-saved');
+  if (el) {
+    el.textContent = 'Saved ' + new Date().toLocaleTimeString();
+    el.classList.add('just-saved');
+    setTimeout(() => el.classList.remove('just-saved'), 2000);
+  }
+}
+
+// ===================== TOAST SYSTEM =====================
+function showToast(msg, type = 'success', duration = 3200) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  const icons = { success: '\u2714', error: '\u2718', warning: '\u26A0', info: '\u2139' };
+  t.innerHTML = '<span>' + (icons[type] || '') + '</span><span>' + msg + '</span>';
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, duration);
+}
 
 // ===================== NAVIGATION =====================
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DAYS_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const COMPAT_LABELS = {'-2':'Conflict','-1':'Friction','0':'Neutral','1':'Good','2':'Great'};
 const COMPAT_COLORS = {'-2':'var(--red)','-1':'var(--orange)','0':'var(--text-dim)','1':'var(--green)','2':'var(--blue)'};
+const VALID_PAGES = ['dashboard','employees','availability','compatibility','generate','settings'];
 
 document.querySelectorAll('nav button').forEach(btn => {
   btn.addEventListener('click', () => showPage(btn.dataset.page));
 });
 
 function showPage(page) {
+  if (!VALID_PAGES.includes(page)) page = 'dashboard';
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+  if (window.location.hash !== '#' + page) history.replaceState(null, '', '#' + page);
   if (page === 'dashboard') renderDashboard();
   if (page === 'employees') renderEmployees();
   if (page === 'availability') renderAvailability();
   if (page === 'compatibility') renderCompatibility();
   if (page === 'generate') initGeneratePage();
   if (page === 'settings') renderSettings();
+}
+
+// Hash routing
+window.addEventListener('hashchange', () => {
+  const page = window.location.hash.slice(1);
+  if (page) showPage(page);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'g') { e.preventDefault(); showPage('generate'); generateSchedule(); }
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); save(); showToast('Data saved', 'success'); }
+  if (e.key === 'Escape') closeModal();
+});
+
+// Restore pending schedule
+if (data.pendingSchedule) {
+  _pendingSchedule = data.pendingSchedule;
 }
 
 // ===================== DASHBOARD =====================
@@ -968,6 +1108,9 @@ function renderDashboard() {
   } else {
     overviewCard.style.display = 'none';
   }
+
+  // Schedule History
+  renderScheduleHistory();
 }
 
 // ===================== EMPLOYEES =====================
@@ -1170,7 +1313,7 @@ function addChipFromPreset(containerId, val) {
 
 function saveEmployee(editId) {
   const name = document.getElementById('emp-name').value.trim();
-  if (!name) { alert('Name is required'); return; }
+  if (!name) { showToast('Name is required', 'warning'); return; }
 
   const empData = {
     id: editId || 'emp_' + (data.nextId++),
@@ -1314,7 +1457,15 @@ function initGeneratePage() {
 
 function generateSchedule() {
   const emps = data.employees;
-  if (emps.length === 0) { alert('Add employees first!'); return; }
+  if (emps.length === 0) { showToast('Add employees first!', 'warning'); return; }
+
+  // Show progress bar
+  const prog = document.getElementById('gen-progress');
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+  prog.classList.add('active');
+  fill.style.width = '10%';
+  label.textContent = 'Analyzing availability...';
 
   const minPer = parseInt(document.getElementById('min-per-shift').value) || 2;
   const maxPer = parseInt(document.getElementById('max-per-shift').value) || 5;
@@ -1347,7 +1498,7 @@ function generateSchedule() {
 
   // Multiple passes for better optimization
   const bestSchedule = { schedule: null, score: -Infinity };
-  const ITERATIONS = 15;
+  const ITERATIONS = 25;
 
   for (let iter = 0; iter < ITERATIONS; iter++) {
     const iterSchedule = {};
@@ -1428,14 +1579,19 @@ function generateSchedule() {
         for (const { emp, score: empScore } of scored) {
           if (assigned.length >= target) break;
 
-          // Compatibility check
+          // Compatibility check — hard conflicts (-2) are ABSOLUTE exclusions
           if (assigned.length > 0) {
-            const compatTotal = assigned.reduce((sum, aId) => {
+            let hasHardConflict = false;
+            let compatTotal = 0;
+            for (const aId of assigned) {
               const key = compatKey(emp.id, aId);
-              return sum + (data.compatibility[key] || 0);
-            }, 0);
-
-            // With compatibility priority, be stricter
+              const c = data.compatibility[key] || 0;
+              if (c <= -2) { hasHardConflict = true; break; }
+              compatTotal += c;
+            }
+            // Hard conflicts are never scheduled together, period
+            if (hasHardConflict) continue;
+            // Soft conflicts still use threshold scoring
             const threshold = W.compat > 1 ? -1 : -2;
             if (compatTotal < threshold && assigned.length >= minPer) continue;
           }
@@ -1445,11 +1601,18 @@ function generateSchedule() {
           iterBudgetUsed++;
         }
 
-        // Fill remaining if under minimum
+        // Fill remaining if under minimum — still respects hard conflicts
         if (assigned.length < minPer) {
           for (const { emp } of scored) {
             if (assigned.length >= minPer) break;
             if (!assigned.includes(emp.id)) {
+              // Check for hard conflicts before force-filling
+              let hardBlock = false;
+              for (const aId of assigned) {
+                const key = compatKey(emp.id, aId);
+                if ((data.compatibility[key] || 0) <= -2) { hardBlock = true; break; }
+              }
+              if (hardBlock) continue;
               assigned.push(emp.id);
               iterCount[emp.id]++;
               iterBudgetUsed++;
@@ -1574,7 +1737,16 @@ function generateSchedule() {
   };
 
   document.getElementById('schedule-output').innerHTML = renderScheduleHTML(scheduleObj);
-  window._pendingSchedule = scheduleObj;
+  _pendingSchedule = scheduleObj;
+  data.pendingSchedule = scheduleObj;
+  save();
+  renderLaborCost(scheduleObj);
+  showToast('Schedule generated — ' + qualityPct + '% quality', 'success');
+
+  // Hide progress bar
+  prog.classList.remove('active');
+  fill.style.width = '100%';
+  label.textContent = 'Complete!';
 
   // Scroll to output
   document.getElementById('schedule-output-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1606,7 +1778,9 @@ function renderScheduleHTML(schedObj) {
         const title = `${emp.role||''}${hasConflict?' — CONFLICT':hasFriction?' — friction':''}${isPreferred?' — preferred':''}`;
         return `<span class="schedule-emp ${cls}" title="${esc(title)}">${esc(emp.name)}${isPreferred?' ★':''}</span>`;
       }).join('');
-      html += `<td>${empHtml || '<span style="color:#444;font-size:0.78rem;">—</span>'}</td>`;
+      const isUnderstaffed = schedObj === _pendingSchedule && assigned.length < (parseInt(document.getElementById('min-per-shift').value, 10) || 0);
+      const understaffWarning = isUnderstaffed ? `<div style="margin-top:6px;"><button onclick="openConflictResolver('${day}', '${shift.id}')" class="btn btn-outline" style="background:#4a0000;color:#ff8a80;border-color:#ff8a80;padding:2px 8px;font-size:0.65rem;font-weight:700;">⚠️ RESOLVE CONFLICT</button></div>` : '';
+      html += `<td>${empHtml || '<span style="color:#444;font-size:0.78rem;">—</span>'}${understaffWarning}</td>`;
     });
     html += '</tr>';
   });
@@ -1633,11 +1807,98 @@ function renderScheduleHTML(schedObj) {
 }
 
 function acceptSchedule() {
-  if (window._pendingSchedule) {
-    data.currentSchedule = window._pendingSchedule;
+  if (_pendingSchedule) {
+    // Save to history (keep last 20)
+    _pendingSchedule.savedAt = new Date().toISOString();
+    _pendingSchedule.weekStart = document.getElementById('schedule-start-date').value || 'N/A';
+    data.scheduleHistory = data.scheduleHistory || [];
+    data.scheduleHistory.unshift(JSON.parse(JSON.stringify(_pendingSchedule)));
+    if (data.scheduleHistory.length > 20) data.scheduleHistory = data.scheduleHistory.slice(0, 20);
+    data.currentSchedule = _pendingSchedule;
+    data.pendingSchedule = null;
+    _pendingSchedule = null;
     save();
-    alert('Schedule saved! View it on the Dashboard.');
+    showToast('Schedule accepted & saved!', 'success');
   }
+}
+
+function renderScheduleOutput(schedObj) {
+  document.getElementById('schedule-output-card').style.display = 'block';
+  document.getElementById('schedule-output').innerHTML = renderScheduleHTML(schedObj);
+  renderLaborCost(schedObj);
+}
+
+function openConflictResolver(day, shiftId) {
+  if (!_pendingSchedule) return;
+  const assigned = _pendingSchedule[day]?.[shiftId] || [];
+  
+  const available = data.employees.filter(e => {
+    if (assigned.includes(e.id)) return false;
+    const avail = data.availability[e.id]?.[day]?.[shiftId];
+    return avail === 'available' || avail === 'prefer';
+  });
+
+  let html = `<h2 style="margin-bottom:16px;">Resolve Scheduling Conflict</h2>
+    <p style="color:var(--text-dim);margin-bottom:16px;font-size:0.85rem;">The shift <strong>${esc(day)} - ${esc(data.shifts.find(s=>s.id===shiftId)?.name || shiftId)}</strong> is under-staffed because the remaining available employees have hard conflicts (-2) with already assigned staff.</p>
+    <div style="margin-bottom:16px;">
+      <strong>Assigned:</strong> ${assigned.map(id => esc(data.employees.find(e=>e.id===id)?.name)).join(', ') || 'None'}
+    </div>
+    <div class="table-wrap">
+      <table style="width:100%;text-align:left;border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid #333;">
+            <th style="padding:8px;">Blocked Employee</th>
+            <th style="padding:8px;">Conflicting With</th>
+            <th style="padding:8px;text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  let hasBlocked = false;
+  available.forEach(emp => {
+    let conflictsWith = [];
+    for (const aId of assigned) {
+      const key = compatKey(emp.id, aId);
+      if ((data.compatibility[key] || 0) <= -2) {
+        conflictsWith.push(data.employees.find(e=>e.id===aId)?.name || 'Unknown');
+      }
+    }
+    
+    if (conflictsWith.length > 0) {
+      hasBlocked = true;
+      html += `<tr style="border-bottom:1px solid #222;">
+        <td style="padding:8px;">${esc(emp.name)}</td>
+        <td style="padding:8px;color:var(--red);">${esc(conflictsWith.join(', '))}</td>
+        <td style="padding:8px;text-align:right;">
+          <button class="btn btn-outline" style="border-color:var(--red);color:var(--red);padding:4px 8px;font-size:0.75rem;" onclick="forceAssignConflict('${day}', '${shiftId}', '${emp.id}')">Force Override</button>
+        </td>
+      </tr>`;
+    }
+  });
+
+  if (!hasBlocked) {
+    html += `<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--text-dim);">No available blocked employees. Ensure employees have marked themselves as available.</td></tr>`;
+  }
+
+  html += `</tbody></table></div>
+  <div class="form-actions" style="margin-top:24px;">
+    <button class="btn" onclick="closeModal()">Close</button>
+  </div>`;
+
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function forceAssignConflict(day, shiftId, empId) {
+  if (!_pendingSchedule) return;
+  if (!_pendingSchedule[day]) _pendingSchedule[day] = {};
+  if (!_pendingSchedule[day][shiftId]) _pendingSchedule[day][shiftId] = [];
+  
+  _pendingSchedule[day][shiftId].push(empId);
+  closeModal();
+  renderScheduleOutput(_pendingSchedule);
+  showToast('Employee force-assigned to shift.', 'success');
 }
 
 function printSchedule() {
@@ -1722,7 +1983,7 @@ function savePresets() {
   data.presets.strengths = document.getElementById('preset-strengths').value.split(',').map(s => s.trim()).filter(Boolean);
   data.presets.weaknesses = document.getElementById('preset-weaknesses').value.split(',').map(s => s.trim()).filter(Boolean);
   save();
-  alert('Presets saved!');
+  showToast('Presets saved!', 'success');
 }
 
 // ===================== DATA MANAGEMENT =====================
@@ -1746,33 +2007,142 @@ function importData(event) {
       if (imported.employees) {
         data = { ...defaultData(), ...imported };
         save();
-        alert('Data imported successfully!');
+        showToast('Data imported successfully!', 'success');
         showPage('dashboard');
-      } else { alert('Invalid file — expected ShiftForge data'); }
-    } catch(err) { alert('Error: ' + err.message); }
+      } else { showToast('Invalid file — expected ShiftForge data', 'error'); }
+    } catch(err) { showToast('Import error: ' + err.message, 'error'); }
   };
   reader.readAsText(file);
 }
 
-function clearAllData() {
-  if (!confirm('Delete ALL employees, schedules, and settings?')) return;
-  if (!confirm('This cannot be undone. Are you sure?')) return;
+function confirmClearAll(btn) {
+  const parent = btn.parentNode;
+  const existing = parent.querySelector('.inline-confirm');
+  if (existing) { existing.remove(); return; }
+  const div = document.createElement('div');
+  div.className = 'inline-confirm';
+  div.innerHTML = '<span class="confirm-msg">Delete everything?</span>' +
+    '<button class="confirm-yes" onclick="doClearAll()">Yes, Delete</button>' +
+    '<button class="confirm-no" onclick="this.closest(\'.inline-confirm\').remove()">Cancel</button>';
+  parent.appendChild(div);
+}
+
+function doClearAll() {
   data = defaultData();
+  _pendingSchedule = null;
   save();
+  showToast('All data cleared', 'warning');
   showPage('dashboard');
+}
+
+function exportCSV() {
+  if (!data.currentSchedule) { showToast('No schedule to export', 'warning'); return; }
+  const s = data.currentSchedule;
+  let csv = 'Day,Shift,Employees\n';
+  DAYS.forEach(day => {
+    if (!s.schedule[day]) return;
+    data.shifts.forEach(shift => {
+      const emps = (s.schedule[day][shift.id] || []).map(id => {
+        const e = data.employees.find(x => x.id === id);
+        return e ? e.name : 'Unknown';
+      }).join('; ');
+      csv += '"' + day + '","' + shift.name + '","' + emps + '"\n';
+    });
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'shiftforge_schedule_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported', 'success');
+}
+
+// ===================== SCHEDULE HISTORY =====================
+function renderScheduleHistory() {
+  const card = document.getElementById('schedule-history-card');
+  const list = document.getElementById('schedule-history-list');
+  if (!data.scheduleHistory || data.scheduleHistory.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = data.scheduleHistory.slice(0, 12).map((h, i) => {
+    const d = new Date(h.savedAt);
+    const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    const qColor = h.quality >= 80 ? 'var(--green)' : h.quality >= 60 ? 'var(--orange)' : 'var(--red)';
+    return '<div class="history-item" onclick="viewHistorySchedule(' + i + ')">' +
+      '<div><span class="hi-date">' + dateStr + '</span><br><span style="font-size:0.75rem;color:var(--text-dim);">Week of ' + (h.weekStart || 'N/A') + '</span></div>' +
+      '<div class="hi-actions"><span class="hi-quality" style="color:' + qColor + ';">' + (h.quality || 0).toFixed(0) + '%</span>' +
+      '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();restoreHistorySchedule(' + i + ')" style="font-size:0.7rem;padding:2px 8px;">Restore</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function viewHistorySchedule(idx) {
+  const h = data.scheduleHistory[idx];
+  if (!h) return;
+  _pendingSchedule = h;
+  showPage('generate');
+  renderScheduleOutput(h);
+  showToast('Viewing historical schedule', 'info');
+}
+
+function restoreHistorySchedule(idx) {
+  const h = data.scheduleHistory[idx];
+  if (!h) return;
+  data.currentSchedule = h;
+  save();
+  showToast('Schedule restored', 'success');
+  showPage('dashboard');
+}
+
+// ===================== LABOR COST =====================
+function renderLaborCost(schedule) {
+  const costDiv = document.getElementById('schedule-cost');
+  if (!costDiv) return;
+  let totalCost = 0;
+  let hasRates = false;
+  const breakdown = [];
+  data.employees.forEach(emp => {
+    const rate = parseFloat(data.hourlyRates[emp.id]) || 0;
+    if (rate <= 0) return;
+    hasRates = true;
+    let hours = 0;
+    DAYS.forEach(day => {
+      if (!schedule.schedule[day]) return;
+      data.shifts.forEach(shift => {
+        if ((schedule.schedule[day][shift.id] || []).includes(emp.id)) {
+          const [sh,sm] = shift.start.split(':').map(Number);
+          const [eh,em] = shift.end.split(':').map(Number);
+          hours += (eh + em/60) - (sh + sm/60);
+        }
+      });
+    });
+    const cost = hours * rate;
+    totalCost += cost;
+    breakdown.push({ name: emp.name, hours: hours.toFixed(1), rate: rate.toFixed(2), cost: cost.toFixed(2) });
+  });
+  if (!hasRates) { costDiv.style.display = 'none'; return; }
+  costDiv.style.display = 'block';
+  costDiv.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+    '<span style="font-weight:600;color:var(--text);">&#128176; Estimated Labor Cost</span>' +
+    '<span class="cost-total">$' + totalCost.toFixed(2) + '</span></div>' +
+    '<div style="font-size:0.78rem;color:var(--text-dim);">' +
+    breakdown.map(b => b.name + ': ' + b.hours + 'h × $' + b.rate + ' = $' + b.cost).join(' &bull; ') + '</div>';
 }
 
 // ===================== UTILS =====================
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-});
-
-// Init
-renderDashboard();
+// Init with hash routing
+(function init() {
+  const hash = window.location.hash.slice(1);
+  if (hash && VALID_PAGES.includes(hash)) {
+    showPage(hash);
+  } else {
+    renderDashboard();
+  }
+})();
 </script>
 </body>
 </html>
